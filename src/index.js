@@ -1,21 +1,50 @@
-const express = require('express');
-const dotenv = require('dotenv');
+const express = require("express");
+const bodyparser = require("body-parser");
+var admin = require("firebase-admin");
 
-const { database } = require('./service/firebase_config');
-const ratingRef = database.ref("rating");
+var serviceAccount = require("./tad_service_account.json");
 
-const FirebaseService = require('./service/firebase_service');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
-dotenv.config()
+const app = express();
+app.use(bodyparser.json());
 
-const app = express()
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+const port = 3000;
 
+app.post("/", (req, res) => {
+  const { registrationTokens, notification } = req.body;
 
-app.get('/rating', (req, res) => FirebaseService.sendRatingMessage(req, res));
+  if (!registrationTokens || registrationTokens.length === 0) {
+    return res.status(400).send('No registration tokens provided');
+  }
 
-const port = 8888
-const listening = app.listen(port, () => {
-    console.log(`Server is running on port ${listening.address().port}`)
-})
+  const message = {
+    notification: {
+      title: notification?.title || 'Default Title',
+      body: notification?.body || 'Default Body',
+    },
+    data: {
+      Nick: "Mario",
+      Room: "PortugalVSDenmark",
+    },
+    tokens: registrationTokens,
+  };
+
+  // Send a multicast message to the provided tokens.
+  admin.messaging().sendMulticast(message)
+    .then((response) => {
+      // Response is a message ID string.
+      console.log('Successfully sent message:', response);
+      res.status(200).send('Notification sent successfully');
+    })
+    .catch((error) => {
+      console.log('Error sending message:', error);
+      res.status(500).send('Error sending notification');
+    });
+});
+
+app.listen(port, () => {
+  console.log("listening to PORT = " + port);
+});
