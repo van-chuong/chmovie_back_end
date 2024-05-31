@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyparser = require("body-parser");
+const path = require('path')
 var admin = require("firebase-admin");
 
 var serviceAccount = require("./tad_service_account.json");
@@ -10,7 +11,9 @@ admin.initializeApp({
 });
 
 const app = express();
+app.set('view engine', 'ejs');
 app.use(bodyparser.json());
+app.use(express.static(path.join(__dirname, 'public')))
 
 const port = 3000;
 
@@ -84,6 +87,17 @@ app.post("/review-notification/:id", async (req, res) => {
     console.error('Error sending message:', error.message);
     return res.status(500).send('Error sending notification');
   }
+});
+
+app.get('/join-room', async (req, res) => {
+    const userAgent = req.get('User-Agent');
+    if (userAgent.includes('Android') || userAgent.includes('Windows')) {
+        res.redirect(302, 'https://play.google.com/store/apps/details?id=com.pinterest&hl=vi');
+    } else if (userAgent.includes('iPhone') || userAgent.includes('iPad') || userAgent.includes('Macintosh')) {
+        res.redirect(302, 'https://apps.apple.com/us/app/pinterest/id429047995');
+    } else {
+        res.render("index.ejs")
+    }
 });
 
 

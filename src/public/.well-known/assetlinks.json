@@ -1,0 +1,5 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target" : { "namespace": "android_app", "package_name": "com.example.chmovie",
+                 "sha256_cert_fingerprints": ["4C:8B:C0:2A:FE:25:63:29:C9:A0:88:27:F4:55:75:26:40:CE:3A:33:40:02:CB:E5:ED:63:44:C9:3C:DB:81:BF"] }
+  }]
